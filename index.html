@@ -1,0 +1,2589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset='UTF-8'>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda SSP</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.header h1 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 32px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-size: 14px;
+  transition: all 0.3s;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.btn-print { background: #3498db; }
+.btn-report { background: #e67e22; }
+.btn-search { background: #9b59b6; }
+.btn-template { background: #27ae60; }
+.btn-week { background: #e74c3c; }
+.btn-month { background: #16a085; }
+.btn-outlook { background: #0078d4; }
+.btn-weather { background: #f39c12; }
+.btn-shortcuts { background: #34495e; }
+
+.weather-widget {
+  display: none;
+  padding: 15px;
+  background: linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%);
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.weather-widget.active {
+  display: block;
+}
+
+.weather-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.weather-icon {
+  font-size: 48px;
+}
+
+.weather-info h3 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.shortcuts-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.shortcuts-modal.active {
+  display: flex;
+}
+
+.shortcuts-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.shortcuts-content h2 {
+  margin-bottom: 20px;
+  color: #667eea;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.shortcut-key {
+  background: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.search-box,
+.templates-box,
+.report-box {
+  display: none;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.search-box.active,
+.templates-box.active,
+.report-box.active {
+  display: block;
+}
+
+.search-input,
+.date-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus,
+.date-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.search-results {
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-result {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-result:hover {
+  background: #e8f4f8;
+}
+
+.template-btn {
+  padding: 8px 15px;
+  margin: 5px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.template-btn:hover {
+  background: #229954;
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.day-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.nav-btn {
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid white;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  background: white;
+  color: #667eea;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 2.5fr 2.5fr 320px;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.notes-section {
+  padding: 20px;
+  background: #fff9e6;
+  border-radius: 8px;
+  border: 2px solid #ffd700;
+  height: fit-content;
+}
+
+.notes-section h3 {
+  color: #f39c12;
+  margin-bottom: 10px;
+}
+
+.notes-textarea {
+  width: 100%;
+  min-height: 400px;
+  padding: 12px;
+  border: 2px solid #ffd700;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.month-view {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.month-day {
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 120px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: white;
+}
+
+.month-day:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.month-day.today {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 3px solid #667eea;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  transform: scale(1.02);
+}
+
+.month-day.today:hover {
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.month-day-header {
+  font-weight: bold;
+  padding: 5px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.month-day.today .month-day-header {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 18px;
+}
+
+.month-day.today .month-tasks {
+  color: white;
+  font-weight: bold;
+}
+
+.month-day.other-month {
+  opacity: 0.4;
+}
+
+.month-tasks {
+  font-size: 11px;
+  color: #666;
+}
+
+.week-view {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 15px;
+}
+
+.week-day {
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 450px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+
+.week-day.today {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e6eeff 100%);
+  border: 3px solid #667eea;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transform: scale(1.02);
+}
+
+.week-day-header {
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  background: #667eea;
+  color: white;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.week-day.today .week-day-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+  font-size: 16px;
+}
+
+.week-day-header:hover {
+  background: #764ba2;
+}
+
+.column {
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+
+.column:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.column-header {
+  text-align: center;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: white;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.column.rv {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.column.rv .column-header {
+  background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+}
+
+.column.rv .task {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.column.rv .task input[type=text] {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  border-bottom-color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+.column.rv .task input[type=text]:focus {
+  border-bottom-color: #fff;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.column.rv .task .time {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.column.rv .task-empty {
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(255, 215, 0, 0.3);
+}
+
+.column.rv .task input[type=checkbox]:checked ~ input[type=text] {
+  font-style: italic;
+  color: #d0d0d0;
+  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.column.rv .task input[type=checkbox]:checked ~ .time {
+  font-style: italic;
+  color: #ffed4e;
+  opacity: 0.85;
+}
+
+.column.pro {
+  background: linear-gradient(135deg, #ebf5fb 0%, #d6eaf8 100%);
+}
+
+.column.pro .column-header {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.column.perso {
+  background: linear-gradient(135deg, #f4ecf7 0%, #e8daef 100%);
+}
+
+.column.perso .column-header {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.tasks {
+  max-height: 550px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tasks::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tasks::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.tasks::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.tasks::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: white;
+  border-radius: 6px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.task:hover {
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.task input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.task .time {
+  font-size: 12px;
+  font-weight: bold;
+  width: 50px;
+  color: #555;
+}
+
+.task input[type=text] {
+  flex: 1;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.task input[type=text]:focus {
+  outline: none;
+  border-bottom-color: #667eea;
+}
+
+.task input[type=checkbox]:checked ~ input[type=text] {
+  text-decoration: line-through;
+  color: #4a4a4a;
+  opacity: 0.8;
+}
+
+.task input[type=checkbox]:checked ~ .task-controls {
+  opacity: 0.6;
+}
+
+.task input[type=checkbox]:checked ~ .time {
+  color: #4a4a4a;
+  opacity: 0.8;
+}
+
+.priority-selector {
+  position: relative;
+}
+
+.priority-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.priority-badge:hover {
+  transform: scale(1.1);
+}
+
+.priority-high {
+  background: #e74c3c;
+  color: white;
+}
+
+.priority-medium {
+  background: #f39c12;
+  color: white;
+}
+
+.priority-low {
+  background: #95a5a6;
+  color: white;
+}
+
+.priority-none {
+  background: #ecf0f1;
+  color: #7f8c8d;
+}
+
+.category-selector {
+  position: relative;
+}
+
+.category-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s;
+}
+
+.category-badge:hover {
+  transform: scale(1.1);
+}
+
+.category-ethan { background: #3498db; color: white; }
+.category-nathan { background: #e74c3c; color: white; }
+.category-sarah { background: #ff69b4; color: white; }
+.category-shirel { background: #8b4513; color: white; }
+.category-ssp { background: #2ecc71; color: white; }
+.category-fred { background: #7f8c8d; color: white; }
+.category-famille { background: #e67e22; color: white; }
+.category-none { background: #95a5a6; }
+
+.task-controls {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.task-btn {
+  padding: 2px 6px;
+  border: none;
+  background: #ecf0f1;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s;
+}
+
+.task-btn:hover {
+  background: #bdc3c7;
+}
+
+.repeat-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+
+.repeat-modal.active {
+  display: flex;
+}
+
+.repeat-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.repeat-content h2 {
+  margin-bottom: 20px;
+  color: #667eea;
+}
+
+.repeat-option {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin: 8px 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.repeat-option:hover {
+  background: #e9ecef;
+  border-color: #667eea;
+}
+
+.repeat-option input[type=radio] {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.repeat-option label {
+  cursor: pointer;
+  flex: 1;
+  font-size: 15px;
+}
+
+.weekdays-selector {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.weekdays-selector.active {
+  display: block;
+}
+
+.weekday-btn {
+  display: inline-block;
+  padding: 8px 12px;
+  margin: 4px;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+}
+
+.weekday-btn.selected {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.repeat-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.repeat-task-indicator {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.auto-reported-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: #ff9800;
+  color: white;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.alert-indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  background: #e74c3c;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+.notification-permission {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  z-index: 1000;
+  max-width: 300px;
+  display: none;
+}
+
+.notification-permission.active {
+  display: block;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+  
+  body {
+    background: white;
+    padding: 0;
+  }
+  
+  .container {
+    padding: 10mm;
+    box-shadow: none;
+  }
+  
+  .header,
+  .btn,
+  .nav-btn,
+  .search-box,
+  .templates-box,
+  .report-box,
+  .weather-widget,
+  .shortcuts-modal,
+  .task-controls,
+  .priority-selector,
+  .category-selector {
+    display: none !important;
+  }
+  
+  .content {
+    grid-template-columns: 1fr 2fr 2fr !important;
+  }
+  
+  .tasks {
+    max-height: none;
+    overflow: visible;
+  }
+  
+  .column {
+    border: 2px solid #000;
+    page-break-inside: avoid;
+  }
+  
+  .notes-section {
+    page-break-before: always;
+  }
+}
+
+@media (max-width: 1200px) {
+  .content {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .week-view {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+  }
+  
+  .week-view {
+    grid-template-columns: 1fr;
+  }
+  
+  .month-view {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class='container'>
+  <div class='header'>
+    <div>
+      <h1>📅 Agenda SSP</h1>
+    </div>
+    <div class='btn-group'>
+      <button class='btn' style='background:#3498db;color:white' onclick='exportAllData()' title='Sauvegarder toutes les données'>💾 Exporter</button>
+      <button class='btn' style='background:#9b59b6;color:white' onclick='document.getElementById("importFileInput").click()' title='Charger les données'>📥 Importer</button>
+      <input type='file' id='importFileInput' accept='.json' style='display:none' onchange='importAllData(event)'>
+      <button class='btn btn-search' onclick='toggleSearch()' title='Ctrl+F'>🔍 Rechercher</button>
+      <button class='btn btn-template' onclick='toggleTemplates()'>📋 Templates</button>
+      <button class='btn btn-week' onclick='toggleWeekView()' title='Ctrl+W'>📆 Semaine</button>
+      <button class='btn btn-month' onclick='toggleMonthView()' title='Ctrl+M'>🗓️ Mois</button>
+      <button class='btn btn-weather' onclick='toggleWeather()'>🌤️ Météo</button>
+      <button class='btn btn-outlook' onclick='exportToOutlook()'>📥 Outlook</button>
+      <button class='btn btn-print' onclick='window.print()' title='Ctrl+P'>🖨️ Imprimer</button>
+      <button class='btn btn-report' onclick='toggleReportBox()' title='Ctrl+R'>⏭️ Reporter</button>
+      <button class='btn' style='background:#27ae60' onclick='goToToday()' title='Ctrl+T'>📍 Aujourd\'hui</button>
+      <button class='btn btn-shortcuts' onclick='toggleShortcuts()' title='?'>⌨️ Raccourcis</button>
+    </div>
+  </div>
+
+  <div class='weather-widget' id='weatherWidget'>
+    <h3 style='margin-bottom:15px;text-align:center'>🌤️ Météo du jour</h3>
+    <div style='display:grid;grid-template-columns:repeat(3,1fr);gap:15px'>
+      <div class='weather-card' id='weatherRungis'>
+        <div class='weather-icon' style='font-size:36px;text-align:center'>☀️</div>
+        <h4 style='text-align:center;margin:10px 0'>Rungis</h4>
+        <p style='text-align:center;font-size:24px;font-weight:bold' id='tempRungis'>-- °C</p>
+        <p style='text-align:center;font-size:12px' id='descRungis'>Chargement...</p>
+      </div>
+      <div class='weather-card' id='weatherBordeaux'>
+        <div class='weather-icon' style='font-size:36px;text-align:center'>☀️</div>
+        <h4 style='text-align:center;margin:10px 0'>Bordeaux</h4>
+        <p style='text-align:center;font-size:24px;font-weight:bold' id='tempBordeaux'>-- °C</p>
+        <p style='text-align:center;font-size:12px' id='descBordeaux'>Chargement...</p>
+      </div>
+      <div class='weather-card' id='weatherNice'>
+        <div class='weather-icon' style='font-size:36px;text-align:center'>☀️</div>
+        <h4 style='text-align:center;margin:10px 0'>Nice</h4>
+        <p style='text-align:center;font-size:24px;font-weight:bold' id='tempNice'>-- °C</p>
+        <p style='text-align:center;font-size:12px' id='descNice'>Chargement...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class='search-box' id='searchBox'>
+    <input type='text' class='search-input' placeholder='Rechercher dans l agenda...' onkeyup='searchTasks(this.value)'>
+    <div class='search-results' id='searchResults'></div>
+  </div>
+
+  <div class='templates-box' id='templatesBox'>
+    <h3>📋 Gestion des Templates</h3>
+    <button class='template-btn' onclick='saveTemplate("lundi")'>💾 Sauver Lundi</button>
+    <button class='template-btn' onclick='applyTemplate("lundi")'>📄 Appliquer Lundi</button>
+    <button class='template-btn' onclick='saveTemplate("mardi")'>💾 Sauver Mardi</button>
+    <button class='template-btn' onclick='applyTemplate("mardi")'>📄 Appliquer Mardi</button>
+    <button class='template-btn' onclick='saveTemplate("mercredi")'>💾 Sauver Mercredi</button>
+    <button class='template-btn' onclick='applyTemplate("mercredi")'>📄 Appliquer Mercredi</button>
+  </div>
+
+  <div class='report-box' id='reportBox'>
+    <h3>⏭️ Reporter les tâches non terminées</h3>
+    <label>Reporter à la date :</label>
+    <input type='date' class='date-input' id='reportDate'>
+    <button class='template-btn' onclick='reportTasksToDate()' style='margin-top:10px;width:100%'>✅ Confirmer le report</button>
+  </div>
+
+  <div id='app'></div>
+</div>
+
+<div class='shortcuts-modal' id='shortcutsModal'>
+  <div class='shortcuts-content'>
+    <h2>⌨️ Raccourcis Clavier</h2>
+    <div class='shortcut-item'>
+      <span>Jour précédent</span>
+      <span class='shortcut-key'>←</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Jour suivant</span>
+      <span class='shortcut-key'>→</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Rechercher</span>
+      <span class='shortcut-key'>Ctrl + F</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Vue Semaine</span>
+      <span class='shortcut-key'>Ctrl + W</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Vue Mois</span>
+      <span class='shortcut-key'>Ctrl + M</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Reporter tâches</span>
+      <span class='shortcut-key'>Ctrl + R</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Retour aujourd'hui</span>
+      <span class='shortcut-key'>Ctrl + T</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Imprimer</span>
+      <span class='shortcut-key'>Ctrl + P</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Afficher raccourcis</span>
+      <span class='shortcut-key'>?</span>
+    </div>
+    <div class='shortcut-item'>
+      <span>Fermer modal</span>
+      <span class='shortcut-key'>Esc</span>
+    </div>
+    <button class='template-btn' onclick='toggleShortcuts()' style='margin-top:20px;width:100%'>Fermer</button>
+  </div>
+</div>
+
+<div class='notification-permission' id='notificationPerm'>
+  <h3>🔔 Notifications</h3>
+  <p>Autoriser les notifications pour recevoir des alertes sur vos tâches importantes ?</p>
+  <button class='template-btn' onclick='requestNotificationPermission()' style='width:100%;margin-top:10px'>Autoriser</button>
+</div>
+
+<div class='repeat-modal' id='repeatModal'>
+  <div class='repeat-content'>
+    <h2>🔁 Répétition de la tâche</h2>
+    <p id='repeatTaskText' style='margin-bottom:20px;padding:10px;background:#f0f0f0;border-radius:6px;font-weight:bold'></p>
+    
+    <div class='repeat-option' onclick='selectRepeatType("none")'>
+      <input type='radio' name='repeat' id='repeat-none' checked>
+      <label for='repeat-none'>❌ Aucune répétition</label>
+    </div>
+    
+    <div class='repeat-option' onclick='selectRepeatType("daily")'>
+      <input type='radio' name='repeat' id='repeat-daily'>
+      <label for='repeat-daily'>📅 Tous les jours</label>
+    </div>
+    
+    <div class='repeat-option' onclick='selectRepeatType("weekdays")'>
+      <input type='radio' name='repeat' id='repeat-weekdays'>
+      <label for='repeat-weekdays'>🗓️ Jours spécifiques de la semaine</label>
+    </div>
+    
+    <div class='weekdays-selector' id='weekdaysSelector'>
+      <p style='font-size:13px;margin-bottom:10px;color:#666'>Sélectionnez les jours :</p>
+      <div>
+        <span class='weekday-btn' data-day='1' onclick='toggleWeekday(1)'>Lun</span>
+        <span class='weekday-btn' data-day='2' onclick='toggleWeekday(2)'>Mar</span>
+        <span class='weekday-btn' data-day='3' onclick='toggleWeekday(3)'>Mer</span>
+        <span class='weekday-btn' data-day='4' onclick='toggleWeekday(4)'>Jeu</span>
+        <span class='weekday-btn' data-day='5' onclick='toggleWeekday(5)'>Ven</span>
+        <span class='weekday-btn' data-day='6' onclick='toggleWeekday(6)'>Sam</span>
+        <span class='weekday-btn' data-day='0' onclick='toggleWeekday(0)'>Dim</span>
+      </div>
+    </div>
+    
+    <div class='repeat-option' onclick='selectRepeatType("weekly")'>
+      <input type='radio' name='repeat' id='repeat-weekly'>
+      <label for='repeat-weekly'>📆 Toutes les semaines (même jour)</label>
+    </div>
+    
+    <div class='repeat-option' onclick='selectRepeatType("biweekly")'>
+      <input type='radio' name='repeat' id='repeat-biweekly'>
+      <label for='repeat-biweekly'>🗓️ Toutes les 2 semaines</label>
+    </div>
+    
+    <div class='repeat-option' onclick='selectRepeatType("monthly")'>
+      <input type='radio' name='repeat' id='repeat-monthly'>
+      <label for='repeat-monthly'>📅 Tous les mois (même jour)</label>
+    </div>
+    
+    <div class='repeat-option' onclick='selectRepeatType("yearly")'>
+      <input type='radio' name='repeat' id='repeat-yearly'>
+      <label for='repeat-yearly'>🎂 Tous les ans (même date)</label>
+    </div>
+    
+    <div class='repeat-buttons'>
+      <button class='template-btn' onclick='saveRepeatTask()' style='flex:1;background:#667eea'>✅ Enregistrer</button>
+      <button class='template-btn' onclick='closeRepeatModal()' style='flex:1;background:#95a5a6'>❌ Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Variables globales
+let currentYear = 2025;
+let currentMonth = 9;
+let currentDay = 25;
+let viewMode = 'day';
+let currentRepeatTask = null;
+let selectedWeekdays = [];
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+  const today = new Date();
+  currentYear = today.getFullYear();
+  currentMonth = today.getMonth();
+  currentDay = today.getDate();
+  
+  render();
+  checkNotificationPermission();
+  setDailyReminder();
+});
+
+// Gestion des notifications
+function checkNotificationPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(() => {
+      document.getElementById('notificationPerm').classList.add('active');
+    }, 2000);
+  }
+}
+
+function requestNotificationPermission() {
+  if ('Notification' in window) {
+    Notification.requestPermission().then(permission => {
+      document.getElementById('notificationPerm').classList.remove('active');
+      if (permission === 'granted') {
+        new Notification('✅ Notifications activées', {
+          body: 'Vous recevrez des alertes pour vos tâches importantes',
+          icon: '📅'
+        });
+      }
+    });
+  }
+}
+
+function showNotification(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, {
+      body: body,
+      icon: '📅',
+      badge: '⚠️'
+    });
+  }
+}
+
+function setDailyReminder() {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(8, 0, 0, 0);
+  
+  const timeUntilTomorrow = tomorrow - now;
+  
+  setTimeout(() => {
+    checkDailyTasks();
+    setInterval(checkDailyTasks, 24 * 60 * 60 * 1000);
+  }, timeUntilTomorrow);
+}
+
+function checkDailyTasks() {
+  const data = loadTasks(currentYear, currentMonth, currentDay);
+  if (!data) return;
+  
+  let urgentCount = 0;
+  ['pro', 'perso'].forEach(type => {
+    if (data[type]) {
+      data[type].forEach(task => {
+        if (!task.checked && (task.priority === 'high' || task.alert)) {
+          urgentCount++;
+        }
+      });
+    }
+  });
+  
+  if (urgentCount > 0) {
+    showNotification(
+      '⚠️ Tâches urgentes aujourd\'hui',
+      `Vous avez ${urgentCount} tâche(s) urgente(s) à accomplir`
+    );
+  }
+}
+
+// Gestion de la météo
+function toggleWeather() {
+  const widget = document.getElementById('weatherWidget');
+  widget.classList.toggle('active');
+  
+  if (widget.classList.contains('active')) {
+    fetchWeather();
+  }
+}
+
+function fetchWeather() {
+  // Simulation de données météo pour les 3 villes
+  const cities = [
+    { name: 'Rungis', id: 'Rungis' },
+    { name: 'Bordeaux', id: 'Bordeaux' },
+    { name: 'Nice', id: 'Nice' }
+  ];
+  
+  const weatherIcons = ['☀️', '⛅', '☁️', '🌧️', '⛈️', '🌤️'];
+  const descriptions = ['Ensoleillé', 'Partiellement nuageux', 'Nuageux', 'Pluie', 'Orage', 'Légèrement nuageux'];
+  
+  cities.forEach(city => {
+    setTimeout(() => {
+      const randomWeather = Math.floor(Math.random() * weatherIcons.length);
+      const temp = Math.floor(Math.random() * 15 + 10); // 10-25°C
+      
+      const card = document.getElementById('weather' + city.id);
+      if (card) {
+        card.querySelector('.weather-icon').textContent = weatherIcons[randomWeather];
+        document.getElementById('temp' + city.id).textContent = temp + ' °C';
+        document.getElementById('desc' + city.id).textContent = descriptions[randomWeather];
+      }
+    }, 300);
+  });
+}
+
+// Raccourcis clavier
+document.addEventListener('keydown', function(e) {
+  // Ctrl+F : Recherche
+  if (e.ctrlKey && e.key === 'f') {
+    e.preventDefault();
+    toggleSearch();
+    document.querySelector('.search-input').focus();
+  }
+  
+  // Ctrl+W : Vue semaine
+  if (e.ctrlKey && e.key === 'w') {
+    e.preventDefault();
+    toggleWeekView();
+  }
+  
+  // Ctrl+M : Vue mois
+  if (e.ctrlKey && e.key === 'm') {
+    e.preventDefault();
+    toggleMonthView();
+  }
+  
+  // Ctrl+R : Reporter
+  if (e.ctrlKey && e.key === 'r') {
+    e.preventDefault();
+    toggleReportBox();
+  }
+  
+  // Ctrl+T : Aujourd'hui
+  if (e.ctrlKey && e.key === 't') {
+    e.preventDefault();
+    goToToday();
+  }
+  
+  // Ctrl+P : Imprimer (natif)
+  
+  // Flèche gauche : Jour précédent
+  if (e.key === 'ArrowLeft' && !e.target.matches('input')) {
+    prevDay();
+  }
+  
+  // Flèche droite : Jour suivant
+  if (e.key === 'ArrowRight' && !e.target.matches('input')) {
+    nextDay();
+  }
+  
+  // ? : Afficher raccourcis
+  if (e.key === '?') {
+    toggleShortcuts();
+  }
+  
+  // Escape : Fermer modales
+  if (e.key === 'Escape') {
+    document.getElementById('shortcutsModal').classList.remove('active');
+  }
+});
+
+function toggleShortcuts() {
+  document.getElementById('shortcutsModal').classList.toggle('active');
+}
+
+// Fonctions de navigation
+function toggleSearch() {
+  document.getElementById('searchBox').classList.toggle('active');
+}
+
+function toggleTemplates() {
+  document.getElementById('templatesBox').classList.toggle('active');
+}
+
+function toggleReportBox() {
+  const box = document.getElementById('reportBox');
+  box.classList.toggle('active');
+  
+  if (box.classList.contains('active')) {
+    const tomorrow = new Date(currentYear, currentMonth, currentDay + 1);
+    document.getElementById('reportDate').value = tomorrow.toISOString().split('T')[0];
+  }
+}
+
+function toggleWeekView() {
+  viewMode = viewMode === 'day' ? 'week' : 'day';
+  render();
+}
+
+function toggleMonthView() {
+  viewMode = viewMode === 'month' ? 'day' : 'month';
+  render();
+}
+
+function searchTasks(query) {
+  if (!query) {
+    document.getElementById('searchResults').innerHTML = '';
+    return;
+  }
+  
+  let results = [];
+  for (let m = 0; m < 12; m++) {
+    for (let d = 1; d <= new Date(currentYear, m + 1, 0).getDate(); d++) {
+      const data = loadTasks(currentYear, m, d);
+      if (!data) continue;
+      
+      ['rv', 'pro', 'perso'].forEach(type => {
+        if (data[type]) {
+          data[type].forEach(task => {
+            if (task.text && task.text.toLowerCase().includes(query.toLowerCase())) {
+              results.push({
+                date: d + '/' + (m + 1),
+                type: type,
+                text: task.text,
+                y: currentYear,
+                m: m,
+                d: d,
+                priority: task.priority,
+                category: task.category
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+  
+  let html = '';
+  results.slice(0, 30).forEach(x => {
+    const priorityBadge = x.priority ? `<span class="priority-badge priority-${x.priority}"></span>` : '';
+    const categoryBadge = x.category ? `<span class="category-badge category-${x.category}">${x.category === 'ethan' ? 'Ethan' : x.category === 'nathan' ? 'Nathan' : x.category === 'sarah' ? 'Sarah' : x.category === 'shirel' ? 'Shirel' : x.category === 'ssp' ? 'SSP' : x.category === 'fred' ? 'Fred' : x.category === 'famille' ? '👨‍👩‍👧' : ''}</span>` : '';
+    html += `<div class="search-result" onclick="goToDay(${x.y},${x.m},${x.d})">
+      ${x.date} [${x.type}] ${priorityBadge} ${categoryBadge} ${x.text}
+    </div>`;
+  });
+  
+  document.getElementById('searchResults').innerHTML = html || 'Aucun résultat';
+}
+
+// Templates
+function saveTemplate(name) {
+  const data = loadTasks(currentYear, currentMonth, currentDay);
+  if (!data) {
+    alert('Aucune tâche à sauvegarder');
+    return;
+  }
+  localStorage.setItem('template_' + name, JSON.stringify(data));
+  alert('✅ Template "' + name + '" sauvegardé');
+}
+
+function applyTemplate(name) {
+  const template = localStorage.getItem('template_' + name);
+  if (!template) {
+    alert('❌ Template introuvable');
+    return;
+  }
+  localStorage.setItem(getStorageKey(currentYear, currentMonth, currentDay), template);
+  alert('✅ Template "' + name + '" appliqué');
+  render();
+}
+
+// Export Outlook (format .ics)
+function exportToOutlook() {
+  const data = loadTasks(currentYear, currentMonth, currentDay);
+  if (!data) {
+    alert('Aucune tâche à exporter');
+    return;
+  }
+  
+  let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Agenda2025//FR\n';
+  
+  ['rv', 'pro', 'perso'].forEach(type => {
+    if (data[type]) {
+      data[type].forEach((task, index) => {
+        if (task.text && task.text.trim()) {
+          const eventDate = new Date(currentYear, currentMonth, currentDay);
+          const startTime = type === 'rv' ? task.time || '09:00' : '09:00';
+          
+          icsContent += 'BEGIN:VEVENT\n';
+          icsContent += 'UID:' + Date.now() + index + '@agenda2025\n';
+          icsContent += 'DTSTAMP:' + formatICSDate(new Date()) + '\n';
+          icsContent += 'DTSTART:' + formatICSDate(eventDate) + 'T' + startTime.replace(':', '') + '00\n';
+          icsContent += 'SUMMARY:' + task.text + '\n';
+          icsContent += 'DESCRIPTION:[' + type.toUpperCase() + '] ' + task.text + '\n';
+          if (task.priority === 'high') {
+            icsContent += 'PRIORITY:1\n';
+          }
+          icsContent += 'END:VEVENT\n';
+        }
+      });
+    }
+  });
+  
+  icsContent += 'END:VCALENDAR';
+  
+  const blob = new Blob([icsContent], { type: 'text/calendar' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'agenda_' + currentYear + '_' + (currentMonth + 1) + '_' + currentDay + '.ics';
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  alert('✅ Export Outlook réussi !');
+}
+
+function formatICSDate(date) {
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+// Stockage
+function getStorageKey(y, m, d) {
+  return 'agenda_' + y + '_' + String(m + 1).padStart(2, '0') + '_' + String(d).padStart(2, '0');
+}
+
+function saveTasks(y, m, d) {
+  const data = { rv: [], pro: [], perso: [], notes: '' };
+  
+  // Sauvegarder les notes
+  const notesTextarea = document.getElementById('dayNotes');
+  if (notesTextarea) {
+    data.notes = notesTextarea.value;
+  }
+  
+  // RV
+  document.querySelectorAll('.column.rv .task').forEach(t => {
+    const checkbox = t.querySelector('input[type=checkbox]');
+    const textInput = t.querySelector('input[type=text]');
+    const timeSpan = t.querySelector('.time');
+    const priorityEl = t.querySelector('.priority-badge');
+    const categoryEl = t.querySelector('.category-badge');
+    const alertIndicator = t.querySelector('.alert-indicator');
+    
+    // Toujours sauvegarder l'entrée avec son horaire, même si vide
+    data.rv.push({
+      checked: checkbox ? checkbox.checked : false,
+      text: textInput ? textInput.value : '',
+      time: timeSpan ? timeSpan.textContent : '',
+      priority: priorityEl ? priorityEl.dataset.priority : 'none',
+      category: categoryEl ? categoryEl.dataset.category : 'none',
+      alertTime: alertIndicator ? (alertIndicator.dataset.alertTime || null) : null
+    });
+  });
+  
+  // PRO
+  document.querySelectorAll('.column.pro .task').forEach((t, i) => {
+    const checkbox = t.querySelector('input[type=checkbox]');
+    const textInput = t.querySelector('input[type=text]');
+    const priorityEl = t.querySelector('.priority-badge');
+    const categoryEl = t.querySelector('.category-badge');
+    const alertIndicator = t.querySelector('.alert-indicator');
+    
+    if (textInput && textInput.value.trim()) {
+      data.pro.push({
+        checked: checkbox.checked,
+        text: textInput.value,
+        index: i,
+        priority: priorityEl ? priorityEl.dataset.priority : 'none',
+        category: categoryEl ? categoryEl.dataset.category : 'none',
+        alert: alertIndicator !== null
+      });
+    }
+  });
+  
+  // PERSO
+  document.querySelectorAll('.column.perso .task').forEach((t, i) => {
+    const checkbox = t.querySelector('input[type=checkbox]');
+    const textInput = t.querySelector('input[type=text]');
+    const priorityEl = t.querySelector('.priority-badge');
+    const categoryEl = t.querySelector('.category-badge');
+    const alertIndicator = t.querySelector('.alert-indicator');
+    
+    if (textInput && textInput.value.trim()) {
+      data.perso.push({
+        checked: checkbox.checked,
+        text: textInput.value,
+        index: i,
+        priority: priorityEl ? priorityEl.dataset.priority : 'none',
+        category: categoryEl ? categoryEl.dataset.category : 'none',
+        alert: alertIndicator !== null
+      });
+    }
+  });
+  
+  localStorage.setItem(getStorageKey(y, m, d), JSON.stringify(data));
+}
+
+function loadTasks(y, m, d) {
+  const stored = localStorage.getItem(getStorageKey(y, m, d));
+  return stored ? JSON.parse(stored) : null;
+}
+
+// Reporter les tâches
+function reportTasksToDate() {
+  const dateInput = document.getElementById('reportDate');
+  if (!dateInput.value) {
+    alert('Veuillez sélectionner une date');
+    return;
+  }
+  
+  const targetDate = new Date(dateInput.value);
+  const ty = targetDate.getFullYear();
+  const tm = targetDate.getMonth();
+  const td = targetDate.getDate();
+  
+  const currentData = loadTasks(currentYear, currentMonth, currentDay);
+  if (!currentData) {
+    alert('Aucune tâche à reporter');
+    return;
+  }
+  
+  const unfinishedPro = currentData.pro ? currentData.pro.filter(t => !t.checked) : [];
+  const unfinishedPerso = currentData.perso ? currentData.perso.filter(t => !t.checked) : [];
+  
+  if (!unfinishedPro.length && !unfinishedPerso.length) {
+    alert('✅ Toutes les tâches sont terminées !');
+    return;
+  }
+  
+  const targetData = loadTasks(ty, tm, td) || { rv: [], pro: [], perso: [], notes: '' };
+  
+  unfinishedPro.forEach(t => {
+    targetData.pro.push({
+      checked: false,
+      text: t.text,
+      index: targetData.pro.length,
+      priority: t.priority,
+      category: t.category,
+      alert: t.alert
+    });
+  });
+  
+  unfinishedPerso.forEach(t => {
+    targetData.perso.push({
+      checked: false,
+      text: t.text,
+      index: targetData.perso.length,
+      priority: t.priority,
+      category: t.category,
+      alert: t.alert
+    });
+  });
+  
+  localStorage.setItem(getStorageKey(ty, tm, td), JSON.stringify(targetData));
+  
+  const reportedCount = unfinishedPro.length + unfinishedPerso.length;
+  alert(`✅ ${reportedCount} tâche(s) reportée(s) au ${td}/${tm + 1}/${ty}`);
+  
+  document.getElementById('reportBox').classList.remove('active');
+}
+
+// Export / Import de toutes les données
+function exportAllData() {
+  // Récupérer toutes les données du localStorage
+  const allData = {};
+  
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    const value = localStorage.getItem(key);
+    allData[key] = value;
+  }
+  
+  // Créer le fichier JSON
+  const dataStr = JSON.stringify(allData, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  
+  // Créer le nom du fichier avec la date
+  const now = new Date();
+  const filename = `agenda-ssp-backup-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.json`;
+  
+  // Télécharger le fichier
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  showNotification('✅ Export réussi', `${Object.keys(allData).length} entrées sauvegardées dans ${filename}`);
+}
+
+function importAllData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const importedData = JSON.parse(e.target.result);
+      
+      // Demander confirmation
+      const confirmMsg = `⚠️ ATTENTION ⚠️\n\n` +
+        `Vous allez importer ${Object.keys(importedData).length} entrées.\n\n` +
+        `Options :\n` +
+        `- OK : REMPLACER toutes les données actuelles\n` +
+        `- Annuler : Fusionner avec les données existantes\n\n` +
+        `Que souhaitez-vous faire ?`;
+      
+      const replace = confirm(confirmMsg);
+      
+      if (replace) {
+        // Remplacer : vider d'abord le localStorage
+        localStorage.clear();
+      }
+      
+      // Importer les données
+      let imported = 0;
+      for (const [key, value] of Object.entries(importedData)) {
+        localStorage.setItem(key, value);
+        imported++;
+      }
+      
+      showNotification('✅ Import réussi', `${imported} entrées importées avec succès`);
+      
+      // Recharger l'affichage
+      render();
+      
+    } catch (error) {
+      alert('❌ Erreur lors de l\'import : Fichier invalide ou corrompu');
+      console.error('Import error:', error);
+    }
+  };
+  
+  reader.readAsText(file);
+  
+  // Reset l'input pour permettre de réimporter le même fichier
+  event.target.value = '';
+}
+
+// Report automatique des tâches non terminées
+function autoReportUnfinishedTasks() {
+  const now = new Date();
+  const lastCheckKey = 'lastAutoReportCheck';
+  const lastCheck = localStorage.getItem(lastCheckKey);
+  
+  // Vérifier si c'est un nouveau jour
+  const today = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+  
+  if (lastCheck !== today) {
+    // C'est un nouveau jour, reporter les tâches d'hier
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const yesterdayData = loadTasks(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+    
+    if (yesterdayData) {
+      const todayData = loadTasks(now.getFullYear(), now.getMonth(), now.getDate()) || { rv: [], pro: [], perso: [], notes: '' };
+      
+      // Reporter les tâches PRO non cochées
+      if (yesterdayData.pro) {
+        yesterdayData.pro.forEach(task => {
+          if (task.text && !task.checked && !task.isRepeat) {
+            const existingIndex = todayData.pro.findIndex(t => !t.text);
+            if (existingIndex !== -1) {
+              todayData.pro[existingIndex] = {
+                ...task,
+                checked: false,
+                index: existingIndex
+              };
+            } else {
+              todayData.pro.push({
+                ...task,
+                checked: false,
+                index: todayData.pro.length
+              });
+            }
+          }
+        });
+      }
+      
+      // Reporter les tâches PERSO non cochées
+      if (yesterdayData.perso) {
+        yesterdayData.perso.forEach(task => {
+          if (task.text && !task.checked && !task.isRepeat) {
+            const existingIndex = todayData.perso.findIndex(t => !t.text);
+            if (existingIndex !== -1) {
+              todayData.perso[existingIndex] = {
+                ...task,
+                checked: false,
+                index: existingIndex
+              };
+            } else {
+              todayData.perso.push({
+                ...task,
+                checked: false,
+                index: todayData.perso.length
+              });
+            }
+          }
+        });
+      }
+      
+      // Sauvegarder les tâches reportées
+      localStorage.setItem(getStorageKey(now.getFullYear(), now.getMonth(), now.getDate()), JSON.stringify(todayData));
+      
+      console.log('✅ Tâches non terminées reportées automatiquement');
+    }
+    
+    // Mettre à jour la date de dernière vérification
+    localStorage.setItem(lastCheckKey, today);
+  }
+}
+
+// Vérifier toutes les heures si on a changé de jour
+function scheduleAutoReport() {
+  autoReportUnfinishedTasks(); // Vérifier immédiatement au chargement
+  
+  // Vérifier toutes les heures
+  setInterval(() => {
+    autoReportUnfinishedTasks();
+  }, 60 * 60 * 1000); // 1 heure
+  
+  // Vérifier également à minuit précisément
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+  const msUntilMidnight = midnight - now;
+  
+  setTimeout(() => {
+    autoReportUnfinishedTasks();
+    // Puis continuer à vérifier toutes les 24h à minuit
+    setInterval(() => {
+      autoReportUnfinishedTasks();
+    }, 24 * 60 * 60 * 1000);
+  }, msUntilMidnight);
+}
+
+// Déterminer heure d'été ou d'hiver
+function getSeason(year, month, day) {
+  // Changement d'heure en Europe :
+  // Heure d'été : dernier dimanche de mars à 2h du matin
+  // Heure d'hiver : dernier dimanche d'octobre à 3h du matin
+  
+  // Trouver le dernier dimanche de mars
+  const marchLastDay = new Date(year, 3, 0); // Dernier jour de mars
+  let marchLastSunday = marchLastDay.getDate();
+  while (new Date(year, 2, marchLastSunday).getDay() !== 0) {
+    marchLastSunday--;
+  }
+  
+  // Trouver le dernier dimanche d'octobre
+  const octoberLastDay = new Date(year, 10, 0); // Dernier jour d'octobre
+  let octoberLastSunday = octoberLastDay.getDate();
+  while (new Date(year, 9, octoberLastSunday).getDay() !== 0) {
+    octoberLastSunday--;
+  }
+  
+  const currentDate = new Date(year, month, day);
+  const summerStart = new Date(year, 2, marchLastSunday); // Mars
+  const winterStart = new Date(year, 9, octoberLastSunday); // Octobre
+  
+  if (currentDate >= summerStart && currentDate < winterStart) {
+    return '☀️ Heure d\'été';
+  } else {
+    return '❄️ Heure d\'hiver';
+  }
+}
+
+// Vacances scolaires Zone C (Paris, Créteil, Versailles, Bordeaux, Toulouse...)
+function getVacancesScolaires(year, month, day) {
+  const currentDate = new Date(year, month, day);
+  
+  // Vacances scolaires 2024-2025 Zone C
+  const vacances2024_2025 = [
+    { nom: '🎄 Vacances de Noël', debut: new Date(2024, 11, 21), fin: new Date(2025, 0, 6) },
+    { nom: '⛷️ Vacances d\'hiver', debut: new Date(2025, 1, 22), fin: new Date(2025, 2, 10) },
+    { nom: '🌸 Vacances de printemps', debut: new Date(2025, 3, 19), fin: new Date(2025, 4, 5) },
+    { nom: '☀️ Vacances d\'été', debut: new Date(2025, 6, 5), fin: new Date(2025, 8, 1) }
+  ];
+  
+  // Vacances scolaires 2025-2026 Zone C
+  const vacances2025_2026 = [
+    { nom: '🍂 Vacances de la Toussaint', debut: new Date(2025, 9, 18), fin: new Date(2025, 10, 3) },
+    { nom: '🎄 Vacances de Noël', debut: new Date(2025, 11, 20), fin: new Date(2026, 0, 5) },
+    { nom: '⛷️ Vacances d\'hiver', debut: new Date(2026, 1, 21), fin: new Date(2026, 2, 9) },
+    { nom: '🌸 Vacances de printemps', debut: new Date(2026, 3, 18), fin: new Date(2026, 4, 4) },
+    { nom: '☀️ Vacances d\'été', debut: new Date(2026, 6, 4), fin: new Date(2026, 8, 1) }
+  ];
+  
+  const toutesVacances = [...vacances2024_2025, ...vacances2025_2026];
+  
+  for (let periode of toutesVacances) {
+    if (currentDate >= periode.debut && currentDate <= periode.fin) {
+      const joursRestants = Math.ceil((periode.fin - currentDate) / (1000 * 60 * 60 * 24));
+      return `${periode.nom} - Zone C\n(Encore ${joursRestants} jour${joursRestants > 1 ? 's' : ''} de vacances)`;
+    }
+    
+    // Alerte 7 jours avant les vacances
+    const joursAvant = Math.ceil((periode.debut - currentDate) / (1000 * 60 * 60 * 24));
+    if (joursAvant > 0 && joursAvant <= 7) {
+      return `📅 ${periode.nom} dans ${joursAvant} jour${joursAvant > 1 ? 's' : ''} ! (Zone C)`;
+    }
+  }
+  
+  return '';
+}
+
+// Fêtes juives (calendrier hébraïque)
+function getFetesJuives(year, month, day) {
+  const currentDate = new Date(year, month, day);
+  
+  // Calendrier des fêtes juives 2024-2026
+  const fetes = [
+    // 2024
+    { nom: '🍯 Rosh Hashana', debut: new Date(2024, 9, 3), fin: new Date(2024, 9, 4), type: 'majeure' },
+    { nom: '🕊️ Yom Kippour', debut: new Date(2024, 9, 12), fin: new Date(2024, 9, 12), type: 'majeure' },
+    { nom: '🏕️ Souccot', debut: new Date(2024, 9, 17), fin: new Date(2024, 9, 23), type: 'majeure' },
+    { nom: '📜 Simhat Torah', debut: new Date(2024, 9, 25), fin: new Date(2024, 9, 25), type: 'majeure' },
+    { nom: '🕎 Hanoukka', debut: new Date(2024, 11, 26), fin: new Date(2025, 0, 2), type: 'mineure' },
+    
+    // 2025
+    { nom: '🌳 Tou Bichvat', debut: new Date(2025, 1, 13), fin: new Date(2025, 1, 13), type: 'mineure' },
+    { nom: '🎭 Pourim', debut: new Date(2025, 2, 14), fin: new Date(2025, 2, 14), type: 'mineure' },
+    { nom: '🍷 Pessah', debut: new Date(2025, 3, 13), fin: new Date(2025, 3, 20), type: 'majeure' },
+    { nom: '🌾 Lag BaOmer', debut: new Date(2025, 4, 19), fin: new Date(2025, 4, 19), type: 'mineure' },
+    { nom: '⛰️ Chavouot', debut: new Date(2025, 5, 2), fin: new Date(2025, 5, 3), type: 'majeure' },
+    { nom: '😢 Jeûne du 17 Tamouz', debut: new Date(2025, 6, 13), fin: new Date(2025, 6, 13), type: 'jeune' },
+    { nom: '😢 Tisha BeAv', debut: new Date(2025, 7, 3), fin: new Date(2025, 7, 3), type: 'jeune' },
+    { nom: '🍯 Rosh Hashana', debut: new Date(2025, 8, 23), fin: new Date(2025, 8, 24), type: 'majeure' },
+    { nom: '🕊️ Yom Kippour', debut: new Date(2025, 9, 2), fin: new Date(2025, 9, 2), type: 'majeure' },
+    { nom: '🏕️ Souccot', debut: new Date(2025, 9, 7), fin: new Date(2025, 9, 13), type: 'majeure' },
+    { nom: '📜 Simhat Torah', debut: new Date(2025, 9, 15), fin: new Date(2025, 9, 15), type: 'majeure' },
+    { nom: '🕎 Hanoukka', debut: new Date(2025, 11, 15), fin: new Date(2025, 11, 22), type: 'mineure' },
+    
+    // 2026
+    { nom: '🌳 Tou Bichvat', debut: new Date(2026, 1, 2), fin: new Date(2026, 1, 2), type: 'mineure' },
+    { nom: '🎭 Pourim', debut: new Date(2026, 2, 4), fin: new Date(2026, 2, 4), type: 'mineure' },
+    { nom: '🍷 Pessah', debut: new Date(2026, 3, 2), fin: new Date(2026, 3, 9), type: 'majeure' },
+    { nom: '🌾 Lag BaOmer', debut: new Date(2026, 4, 8), fin: new Date(2026, 4, 8), type: 'mineure' },
+    { nom: '⛰️ Chavouot', debut: new Date(2026, 4, 22), fin: new Date(2026, 4, 23), type: 'majeure' }
+  ];
+  
+  for (let fete of fetes) {
+    // Vérifier si on est le jour de la fête
+    if (currentDate >= fete.debut && currentDate <= fete.fin) {
+      const typeEmoji = fete.type === 'majeure' ? '✡️' : fete.type === 'jeune' ? '🕯️' : '🔯';
+      const joursRestants = Math.ceil((fete.fin - currentDate) / (1000 * 60 * 60 * 24));
+      
+      if (fete.debut.getTime() === fete.fin.getTime()) {
+        return `${typeEmoji} ${fete.nom}`;
+      } else if (joursRestants === 0) {
+        return `${typeEmoji} ${fete.nom} - Dernier jour`;
+      } else {
+        return `${typeEmoji} ${fete.nom} - Jour ${Math.ceil((currentDate - fete.debut) / (1000 * 60 * 60 * 24)) + 1}/${Math.ceil((fete.fin - fete.debut) / (1000 * 60 * 60 * 24)) + 1}`;
+      }
+    }
+    
+    // Alerter 3 jours avant les fêtes majeures
+    if (fete.type === 'majeure') {
+      const joursAvant = Math.ceil((fete.debut - currentDate) / (1000 * 60 * 60 * 24));
+      if (joursAvant > 0 && joursAvant <= 3) {
+        return `📅 ${fete.nom} dans ${joursAvant} jour${joursAvant > 1 ? 's' : ''}`;
+      }
+    }
+  }
+  
+  return '';
+}
+
+// Navigation
+function goToDay(y, m, d) {
+  saveTasks(currentYear, currentMonth, currentDay);
+  currentYear = y;
+  currentMonth = m;
+  currentDay = d;
+  viewMode = 'day';
+  render();
+}
+
+function prevDay() {
+  saveTasks(currentYear, currentMonth, currentDay);
+  let d = currentDay - 1;
+  let m = currentMonth;
+  let y = currentYear;
+  
+  if (d < 1) {
+    m--;
+    if (m < 0) {
+      m = 11;
+      y--;
+    }
+    d = new Date(y, m + 1, 0).getDate();
+  }
+  
+  goToDay(y, m, d);
+}
+
+function nextDay() {
+  saveTasks(currentYear, currentMonth, currentDay);
+  let d = currentDay + 1;
+  let m = currentMonth;
+  let y = currentYear;
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  
+  if (d > daysInMonth) {
+    d = 1;
+    m++;
+    if (m > 11) {
+      m = 0;
+      y++;
+    }
+  }
+  
+  goToDay(y, m, d);
+}
+
+function goToToday() {
+  saveTasks(currentYear, currentMonth, currentDay);
+  const today = new Date();
+  currentYear = today.getFullYear();
+  currentMonth = today.getMonth();
+  currentDay = today.getDate();
+  viewMode = 'day';
+  render();
+}
+
+// Gestion des priorités
+function cyclePriority(element) {
+  const priorities = ['none', 'low', 'medium', 'high'];
+  const current = element.dataset.priority || 'none';
+  const currentIndex = priorities.indexOf(current);
+  const nextIndex = (currentIndex + 1) % priorities.length;
+  const next = priorities[nextIndex];
+  
+  element.dataset.priority = next;
+  element.className = 'priority-badge priority-' + next;
+  
+  const labels = { none: '', low: 'Bas', medium: 'Moyen', high: 'Haut' };
+  element.textContent = labels[next];
+  
+  saveTasks(currentYear, currentMonth, currentDay);
+}
+
+// Gestion des catégories
+function cycleCategory(element) {
+  const categories = ['none', 'ethan', 'nathan', 'sarah', 'shirel', 'ssp', 'fred', 'famille'];
+  const current = element.dataset.category || 'none';
+  const currentIndex = categories.indexOf(current);
+  const nextIndex = (currentIndex + 1) % categories.length;
+  const next = categories[nextIndex];
+  
+  element.dataset.category = next;
+  element.className = 'category-badge category-' + next;
+  
+  const labels = { 
+    none: '', 
+    ethan: 'Ethan', 
+    nathan: 'Nathan', 
+    sarah: 'Sarah', 
+    shirel: 'Shirel', 
+    ssp: 'SSP',
+    fred: 'Fred',
+    famille: '👨‍👩‍👧'
+  };
+  element.textContent = labels[next];
+  
+  saveTasks(currentYear, currentMonth, currentDay);
+}
+
+// Gestion des tâches répétitives
+function openRepeatModal(taskElement, taskType) {
+  const textInput = taskElement.querySelector('input[type=text]');
+  const taskText = textInput ? textInput.value : '';
+  
+  if (!taskText || !taskText.trim()) {
+    alert('⚠️ Veuillez d\'abord saisir une tâche');
+    return;
+  }
+  
+  currentRepeatTask = {
+    element: taskElement,
+    text: taskText,
+    type: taskType
+  };
+  
+  document.getElementById('repeatTaskText').textContent = taskText;
+  document.getElementById('repeatModal').classList.add('active');
+  
+  // Réinitialiser la sélection
+  document.getElementById('repeat-none').checked = true;
+  document.getElementById('weekdaysSelector').classList.remove('active');
+  selectedWeekdays = [];
+  document.querySelectorAll('.weekday-btn').forEach(btn => btn.classList.remove('selected'));
+}
+
+function closeRepeatModal() {
+  document.getElementById('repeatModal').classList.remove('active');
+  currentRepeatTask = null;
+}
+
+function selectRepeatType(type) {
+  document.getElementById('repeat-' + type).checked = true;
+  
+  if (type === 'weekdays') {
+    document.getElementById('weekdaysSelector').classList.add('active');
+  } else {
+    document.getElementById('weekdaysSelector').classList.remove('active');
+  }
+}
+
+function toggleWeekday(day) {
+  const btn = document.querySelector(`.weekday-btn[data-day="${day}"]`);
+  btn.classList.toggle('selected');
+  
+  const index = selectedWeekdays.indexOf(day);
+  if (index > -1) {
+    selectedWeekdays.splice(index, 1);
+  } else {
+    selectedWeekdays.push(day);
+  }
+}
+
+function saveRepeatTask() {
+  if (!currentRepeatTask) return;
+  
+  const selectedType = document.querySelector('input[name="repeat"]:checked').id.replace('repeat-', '');
+  
+  if (selectedType === 'none') {
+    // Supprimer la répétition
+    const repeatKey = `repeat_${currentYear}_${currentMonth}_${currentDay}_${currentRepeatTask.type}`;
+    localStorage.removeItem(repeatKey);
+    closeRepeatModal();
+    showNotification('✅ Répétition supprimée', 'La tâche ne se répétera plus');
+    render();
+    return;
+  }
+  
+  if (selectedType === 'weekdays' && selectedWeekdays.length === 0) {
+    alert('⚠️ Veuillez sélectionner au moins un jour de la semaine');
+    return;
+  }
+  
+  // Créer la configuration de répétition
+  const repeatConfig = {
+    text: currentRepeatTask.text,
+    type: selectedType,
+    taskType: currentRepeatTask.type,
+    weekdays: selectedWeekdays,
+    createdDate: { year: currentYear, month: currentMonth, day: currentDay }
+  };
+  
+  // Sauvegarder dans localStorage
+  const repeatKey = `repeat_${currentYear}_${currentMonth}_${currentDay}_${currentRepeatTask.type}_${Date.now()}`;
+  localStorage.setItem(repeatKey, JSON.stringify(repeatConfig));
+  
+  // Générer les tâches pour les 365 prochains jours
+  generateRepeatTasks(repeatConfig, repeatKey);
+  
+  closeRepeatModal();
+  
+  const typeLabels = {
+    daily: 'tous les jours',
+    weekdays: 'les jours sélectionnés',
+    weekly: 'toutes les semaines',
+    biweekly: 'toutes les 2 semaines',
+    monthly: 'tous les mois',
+    yearly: 'tous les ans'
+  };
+  
+  showNotification('✅ Répétition activée', `"${currentRepeatTask.text}" se répétera ${typeLabels[selectedType]}`);
+  render();
+}
+
+function generateRepeatTasks(config, repeatKey) {
+  const startDate = new Date(config.createdDate.year, config.createdDate.month, config.createdDate.day);
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 365); // 1 an
+  
+  let currentDate = new Date(startDate);
+  currentDate.setDate(currentDate.getDate() + 1); // Commencer le lendemain
+  
+  while (currentDate <= endDate) {
+    let shouldAdd = false;
+    
+    switch (config.type) {
+      case 'daily':
+        shouldAdd = true;
+        break;
+        
+      case 'weekdays':
+        shouldAdd = config.weekdays.includes(currentDate.getDay());
+        break;
+        
+      case 'weekly':
+        shouldAdd = currentDate.getDay() === startDate.getDay();
+        break;
+        
+      case 'biweekly':
+        const weeksDiff = Math.floor((currentDate - startDate) / (7 * 24 * 60 * 60 * 1000));
+        shouldAdd = weeksDiff % 2 === 0 && currentDate.getDay() === startDate.getDay();
+        break;
+        
+      case 'monthly':
+        shouldAdd = currentDate.getDate() === startDate.getDate();
+        break;
+        
+      case 'yearly':
+        shouldAdd = currentDate.getDate() === startDate.getDate() && 
+                    currentDate.getMonth() === startDate.getMonth();
+        break;
+    }
+    
+    if (shouldAdd) {
+      addRepeatTaskToDay(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), config, repeatKey);
+    }
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+}
+
+function addRepeatTaskToDay(year, month, day, config, repeatKey) {
+  const data = loadTasks(year, month, day) || { rv: [], pro: [], perso: [], notes: '' };
+  
+  // Vérifier si la tâche existe déjà
+  const taskList = data[config.taskType];
+  const alreadyExists = taskList && taskList.some(t => t.text === config.text && t.repeatKey === repeatKey);
+  
+  if (!alreadyExists) {
+    const newTask = {
+      checked: false,
+      text: config.text,
+      priority: 'none',
+      category: 'none',
+      repeatKey: repeatKey,
+      isRepeat: true
+    };
+    
+    if (config.taskType === 'rv') {
+      newTask.time = '09:00';
+    } else {
+      newTask.index = taskList ? taskList.length : 0;
+    }
+    
+    if (!data[config.taskType]) {
+      data[config.taskType] = [];
+    }
+    
+    data[config.taskType].push(newTask);
+    localStorage.setItem(getStorageKey(year, month, day), JSON.stringify(data));
+  }
+}
+
+// Gestion des alertes personnalisées pour RV
+function setTaskAlert(taskElement, rvTime) {
+  const textInput = taskElement.querySelector('input[type=text]');
+  const taskText = textInput ? textInput.value : '';
+  
+  if (!taskText || !taskText.trim()) {
+    alert('⚠️ Veuillez d\'abord saisir un rendez-vous');
+    return;
+  }
+  
+  // Vérifier si une alerte existe déjà
+  const existingIndicator = taskElement.querySelector('.alert-indicator');
+  
+  // Demander l'heure de l'alerte
+  const currentAlertTime = existingIndicator ? existingIndicator.dataset.alertTime : '';
+  const defaultTime = currentAlertTime || '08:00';
+  
+  const alertTime = prompt(
+    `🔔 Alerte pour : "${taskText}"\n\n` +
+    `RDV prévu à : ${rvTime}\n\n` +
+    `À quelle heure souhaitez-vous être alerté ?\n` +
+    `(Format : HH:MM, ex: 08:30)\n\n` +
+    `Exemples :\n` +
+    `- 30 min avant le RDV\n` +
+    `- Le matin même : 07:00 ou 08:00\n` +
+    `- Laissez vide pour supprimer l'alerte`,
+    defaultTime
+  );
+  
+  // Si l'utilisateur annule ou laisse vide, supprimer l'alerte
+  if (alertTime === null || alertTime === '') {
+    if (existingIndicator) {
+      existingIndicator.remove();
+      saveTasks(currentYear, currentMonth, currentDay);
+      showNotification('🔕 Alerte supprimée', `L'alerte pour "${taskText}" a été supprimée`);
+    }
+    return;
+  }
+  
+  // Valider le format HH:MM
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+  if (!timeRegex.test(alertTime)) {
+    alert('❌ Format invalide. Utilisez HH:MM (ex: 08:30)');
+    return;
+  }
+  
+  // Supprimer l'indicateur existant s'il y en a un
+  if (existingIndicator) {
+    existingIndicator.remove();
+  }
+  
+  // Ajouter le nouvel indicateur avec l'heure
+  const indicator = document.createElement('div');
+  indicator.className = 'alert-indicator';
+  indicator.dataset.alertTime = alertTime;
+  indicator.title = `Alerte programmée à ${alertTime}`;
+  taskElement.appendChild(indicator);
+  
+  // Sauvegarder
+  saveTasks(currentYear, currentMonth, currentDay);
+  
+  // Programmer l'alerte
+  scheduleAlert(currentYear, currentMonth, currentDay, alertTime, taskText, rvTime);
+  
+  showNotification(
+    '✅ Alerte programmée',
+    `Vous serez alerté à ${alertTime} pour votre RDV de ${rvTime}`
+  );
+}
+
+function scheduleAlert(year, month, day, alertTime, taskText, rvTime) {
+  const [hours, minutes] = alertTime.split(':').map(Number);
+  const alertDate = new Date(year, month, day, hours, minutes, 0);
+  const now = new Date();
+  
+  const timeUntilAlert = alertDate - now;
+  
+  // Si l'alerte est dans le futur
+  if (timeUntilAlert > 0) {
+    // Limiter à 24 heures pour éviter les problèmes de mémoire
+    if (timeUntilAlert < 24 * 60 * 60 * 1000) {
+      setTimeout(() => {
+        showNotification(
+          `🔔 Rappel RDV à ${rvTime}`,
+          taskText
+        );
+        
+        // Son de notification (simple beep)
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.value = 800;
+          oscillator.type = 'sine';
+          
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (e) {
+          console.log('Son non disponible');
+        }
+      }, timeUntilAlert);
+    }
+  }
+}
+
+// Reprogrammer toutes les alertes au chargement
+function scheduleAllAlerts() {
+  const data = loadTasks(currentYear, currentMonth, currentDay);
+  if (!data || !data.rv) return;
+  
+  data.rv.forEach(task => {
+    if (task.alertTime && task.text) {
+      scheduleAlert(currentYear, currentMonth, currentDay, task.alertTime, task.text, task.time);
+    }
+  });
+}
+
+function toggleAlert(taskElement) {
+  const existing = taskElement.querySelector('.alert-indicator');
+  
+  if (existing) {
+    existing.remove();
+  } else {
+    const indicator = document.createElement('div');
+    indicator.className = 'alert-indicator';
+    taskElement.appendChild(indicator);
+    
+    const textInput = taskElement.querySelector('input[type=text]');
+    if (textInput && textInput.value) {
+      showNotification('🔔 Alerte activée', textInput.value);
+    }
+  }
+  
+  saveTasks(currentYear, currentMonth, currentDay);
+}
+
+// Rendu de la vue mois
+function renderMonthView() {
+  const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+  
+  let html = `
+    <div class="day-header">
+      <button class="nav-btn" onclick="currentMonth--; if(currentMonth<0){currentMonth=11;currentYear--;} render()">← Mois</button>
+      <div class="day-title">${months[currentMonth]} ${currentYear}</div>
+      <button class="nav-btn" onclick="currentMonth++; if(currentMonth>11){currentMonth=0;currentYear++;} render()">Mois →</button>
+    </div>
+    <div class="month-view">
+  `;
+  
+  // Jours de la semaine
+  days.forEach(day => {
+    html += `<div class="month-day-header" style="font-weight:bold;text-align:center;padding:10px;">${day}</div>`;
+  });
+  
+  // Jours du mois précédent
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const day = daysInPrevMonth - i;
+    html += `<div class="month-day other-month">
+      <div class="month-day-header">${day}</div>
+    </div>`;
+  }
+  
+  // Jours du mois actuel
+  for (let d = 1; d <= daysInMonth; d++) {
+    const today = new Date();
+    const isToday = d === today.getDate() && 
+                    currentMonth === today.getMonth() && 
+                    currentYear === today.getFullYear();
+    
+    const dayData = loadTasks(currentYear, currentMonth, d);
+    let taskCount = 0;
+    if (dayData) {
+      ['rv', 'pro', 'perso'].forEach(type => {
+        if (dayData[type]) taskCount += dayData[type].filter(t => t.text).length;
+      });
+    }
+    
+    html += `<div class="month-day ${isToday ? 'today' : ''}" onclick="goToDay(${currentYear},${currentMonth},${d})">
+      <div class="month-day-header">${d}</div>
+      <div class="month-tasks">${taskCount > 0 ? `📝 ${taskCount} tâche(s)` : ''}</div>
+    </div>`;
+  }
+  
+  // Jours du mois suivant
+  const totalCells = firstDay + daysInMonth;
+  const remainingCells = 42 - totalCells; // 6 semaines max
+  for (let d = 1; d <= remainingCells; d++) {
+    html += `<div class="month-day other-month">
+      <div class="month-day-header">${d}</div>
+    </div>`;
+  }
+  
+  html += '</div>';
+  return html;
+}
+
+// Rendu de la vue semaine
+function renderWeekView() {
+  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const currentDate = new Date(currentYear, currentMonth, currentDay);
+  let startOfWeek = currentDay - currentDate.getDay();
+  
+  let html = `
+    <div class="day-header">
+      <button class="nav-btn" onclick="currentDay-=7; render()">← Semaine</button>
+      <div class="day-title">Semaine du ${startOfWeek > 0 ? startOfWeek : 1}</div>
+      <button class="nav-btn" onclick="currentDay+=7; render()">Semaine →</button>
+    </div>
+    <div class="week-view">
+  `;
+  
+  for (let i = 0; i < 7; i++) {
+    let d = startOfWeek + i;
+    let m = currentMonth;
+    let y = currentYear;
+    
+    if (d < 1) {
+      m--;
+      if (m < 0) {
+        m = 11;
+        y--;
+      }
+      d = new Date(y, m + 1, 0).getDate() + d;
+    } else if (d > new Date(y, m + 1, 0).getDate()) {
+      d -= new Date(y, m + 1, 0).getDate();
+      m++;
+      if (m > 11) {
+        m = 0;
+        y++;
+      }
+    }
+    
+    const today = new Date();
+    const isToday = d === today.getDate() && 
+                    m === today.getMonth() && 
+                    y === today.getFullYear();
+    
+    const savedData = loadTasks(y, m, d);
+    
+    html += `<div class="week-day ${isToday ? 'today' : ''}">
+      <div class="week-day-header" onclick="goToDay(${y},${m},${d})">
+        ${days[i]}<br>${d}/${m + 1}
+      </div>`;
+    
+    ['pro', 'perso'].forEach(type => {
+      html += `<div style="margin:10px 0"><strong style="color:#667eea">${type.toUpperCase()}</strong></div>`;
+      if (savedData && savedData[type]) {
+        savedData[type].slice(0, 6).forEach(task => {
+          const priorityIcon = task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '';
+          const checkedStyle = task.checked ? 'text-decoration:line-through;opacity:0.5;' : '';
+          html += `<div style="font-size:12px;padding:4px;${checkedStyle}">
+            ${task.checked ? '✅' : '⬜'} ${priorityIcon} ${task.text}
+          </div>`;
+        });
+      }
+    });
+    
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  return html;
+}
+
+// Rendu principal
+function render() {
+  const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  
+  if (viewMode === 'week') {
+    document.getElementById('app').innerHTML = renderWeekView();
+    return;
+  }
+  
+  if (viewMode === 'month') {
+    document.getElementById('app').innerHTML = renderMonthView();
+    return;
+  }
+  
+  const date = new Date(currentYear, currentMonth, currentDay);
+  const savedData = loadTasks(currentYear, currentMonth, currentDay);
+  
+  // RV (7h-19h) - Heures pleines uniquement, cases vides entre
+  let rvHtml = '';
+  for (let h = 7; h <= 19; h++) {
+    // Case avec heure pleine
+    const timeStr = String(h).padStart(2, '0') + ':00';
+    
+    // Trouver la tâche correspondant à cet horaire
+    let task = null;
+    if (savedData && savedData.rv) {
+      task = savedData.rv.find(t => t.time === timeStr);
+    }
+    
+    rvHtml += `<div class="task">
+      <input type="checkbox" ${task && task.checked ? 'checked' : ''} 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)">
+      <span class="time">${timeStr}</span>
+      <input type="text" value="${task && task.text ? task.text : ''}" 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)">
+      <div class="task-controls">
+        <span class="priority-badge priority-${task && task.priority || 'none'}" 
+              data-priority="${task && task.priority || 'none'}"
+              onclick="cyclePriority(this)">${task && task.priority === 'high' ? 'Haut' : task && task.priority === 'medium' ? 'Moyen' : task && task.priority === 'low' ? 'Bas' : ''}</span>
+        <span class="category-badge category-${task && task.category || 'none'}"
+              data-category="${task && task.category || 'none'}"
+              onclick="cycleCategory(this)">${task && task.category === 'ethan' ? 'Ethan' : task && task.category === 'nathan' ? 'Nathan' : task && task.category === 'sarah' ? 'Sarah' : task && task.category === 'shirel' ? 'Shirel' : task && task.category === 'ssp' ? 'SSP' : task && task.category === 'fred' ? 'Fred' : task && task.category === 'famille' ? '👨‍👩‍👧' : ''}</span>
+        <button class="task-btn" onclick="setTaskAlert(this.closest('.task'), '${timeStr}')" title="Définir alerte">🔔</button>
+        <button class="task-btn" onclick="openRepeatModal(this.closest('.task'), 'rv')" title="Répéter">🔁</button>
+      </div>
+      ${task && task.alertTime ? '<div class="alert-indicator" title="Alerte à ' + task.alertTime + '"></div>' : ''}
+      ${task && task.isRepeat ? '<span class="repeat-task-indicator" title="Tâche répétitive">🔁</span>' : ''}
+    </div>`;
+    
+    // Case vide (sans heure affichée) pour les horaires personnalisés
+    const freeTimeStr = String(h).padStart(2, '0') + ':libre';
+    let freeTask = null;
+    if (savedData && savedData.rv) {
+      freeTask = savedData.rv.find(t => t.time === freeTimeStr);
+    }
+    
+    rvHtml += `<div class="task task-empty">
+      <input type="checkbox" ${freeTask && freeTask.checked ? 'checked' : ''} 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)">
+      <span class="time" style="display:none">${freeTimeStr}</span>
+      <input type="text" value="${freeTask && freeTask.text ? freeTask.text : ''}" 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)"
+             placeholder="Ex: ${String(h).padStart(2, '0')}:15, ${String(h).padStart(2, '0')}:30, ${String(h).padStart(2, '0')}:45...">
+      <div class="task-controls">
+        <span class="priority-badge priority-${freeTask && freeTask.priority || 'none'}" 
+              data-priority="${freeTask && freeTask.priority || 'none'}"
+              onclick="cyclePriority(this)">${freeTask && freeTask.priority === 'high' ? 'Haut' : freeTask && freeTask.priority === 'medium' ? 'Moyen' : freeTask && freeTask.priority === 'low' ? 'Bas' : ''}</span>
+        <span class="category-badge category-${freeTask && freeTask.category || 'none'}"
+              data-category="${freeTask && freeTask.category || 'none'}"
+              onclick="cycleCategory(this)">${freeTask && freeTask.category === 'ethan' ? 'Ethan' : freeTask && freeTask.category === 'nathan' ? 'Nathan' : freeTask && freeTask.category === 'sarah' ? 'Sarah' : freeTask && freeTask.category === 'shirel' ? 'Shirel' : freeTask && freeTask.category === 'ssp' ? 'SSP' : freeTask && freeTask.category === 'fred' ? 'Fred' : freeTask && freeTask.category === 'famille' ? '👨‍👩‍👧' : ''}</span>
+        <button class="task-btn" onclick="setTaskAlert(this.closest('.task'), '${freeTimeStr}')" title="Définir alerte">🔔</button>
+        <button class="task-btn" onclick="openRepeatModal(this.closest('.task'), 'rv')" title="Répéter">🔁</button>
+      </div>
+      ${freeTask && freeTask.alertTime ? '<div class="alert-indicator" title="Alerte à ' + freeTask.alertTime + '"></div>' : ''}
+      ${freeTask && freeTask.isRepeat ? '<span class="repeat-task-indicator" title="Tâche répétitive">🔁</span>' : ''}
+    </div>`;
+  }
+  
+  // PRO
+  let proHtml = '';
+  for (let i = 0; i < 20; i++) {
+    const task = savedData && savedData.pro && savedData.pro.find(t => t.index === i);
+    
+    proHtml += `<div class="task">
+      <input type="checkbox" ${task && task.checked ? 'checked' : ''} 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)">
+      <input type="text" value="${task && task.text ? task.text : ''}" 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)">
+      <div class="task-controls">
+        <span class="priority-badge priority-${task && task.priority || 'none'}" 
+              data-priority="${task && task.priority || 'none'}"
+              onclick="cyclePriority(this)">${task && task.priority === 'high' ? 'Haut' : task && task.priority === 'medium' ? 'Moyen' : task && task.priority === 'low' ? 'Bas' : ''}</span>
+        <span class="category-badge category-${task && task.category || 'none'}"
+              data-category="${task && task.category || 'none'}"
+              onclick="cycleCategory(this)">${task && task.category === 'ethan' ? 'Ethan' : task && task.category === 'nathan' ? 'Nathan' : task && task.category === 'sarah' ? 'Sarah' : task && task.category === 'shirel' ? 'Shirel' : task && task.category === 'ssp' ? 'SSP' : task && task.category === 'fred' ? 'Fred' : task && task.category === 'famille' ? '👨‍👩‍👧' : ''}</span>
+        <button class="task-btn" onclick="toggleAlert(this.closest('.task'))" title="Alerte">🔔</button>
+        <button class="task-btn" onclick="openRepeatModal(this.closest('.task'), 'pro')" title="Répéter">🔁</button>
+      </div>
+      ${task && task.alert ? '<div class="alert-indicator"></div>' : ''}
+      ${task && task.isRepeat ? '<span class="repeat-task-indicator" title="Tâche répétitive">🔁</span>' : ''}
+    </div>`;
+  }
+  
+  // PERSO
+  let persoHtml = '';
+  for (let i = 0; i < 20; i++) {
+    const task = savedData && savedData.perso && savedData.perso.find(t => t.index === i);
+    
+    persoHtml += `<div class="task">
+      <input type="checkbox" ${task && task.checked ? 'checked' : ''} 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)">
+      <input type="text" value="${task && task.text ? task.text : ''}" 
+             onchange="saveTasks(currentYear,currentMonth,currentDay)">
+      <div class="task-controls">
+        <span class="priority-badge priority-${task && task.priority || 'none'}" 
+              data-priority="${task && task.priority || 'none'}"
+              onclick="cyclePriority(this)">${task && task.priority === 'high' ? 'Haut' : task && task.priority === 'medium' ? 'Moyen' : task && task.priority === 'low' ? 'Bas' : ''}</span>
+        <span class="category-badge category-${task && task.category || 'none'}"
+              data-category="${task && task.category || 'none'}"
+              onclick="cycleCategory(this)">${task && task.category === 'ethan' ? 'Ethan' : task && task.category === 'nathan' ? 'Nathan' : task && task.category === 'sarah' ? 'Sarah' : task && task.category === 'shirel' ? 'Shirel' : task && task.category === 'ssp' ? 'SSP' : task && task.category === 'fred' ? 'Fred' : task && task.category === 'famille' ? '👨‍👩‍👧' : ''}</span>
+        <button class="task-btn" onclick="toggleAlert(this.closest('.task'))" title="Alerte">🔔</button>
+        <button class="task-btn" onclick="openRepeatModal(this.closest('.task'), 'perso')" title="Répéter">🔁</button>
+      </div>
+      ${task && task.alert ? '<div class="alert-indicator"></div>' : ''}
+      ${task && task.isRepeat ? '<span class="repeat-task-indicator" title="Tâche répétitive">🔁</span>' : ''}
+    </div>`;
+  }
+  
+  document.getElementById('app').innerHTML = `
+    <div class="day-header">
+      <button class="nav-btn" onclick="prevDay()">←</button>
+      <div class="day-title">
+        ${days[date.getDay()]} ${currentDay} ${months[currentMonth]} ${currentYear}
+        <div style="font-size:14px;font-weight:normal;margin-top:5px;opacity:0.9">${getSeason(currentYear, currentMonth, currentDay)}</div>
+      </div>
+      <button class="nav-btn" onclick="nextDay()">→</button>
+    </div>
+    
+    <div class="content">
+      <div class="column rv">
+        <div class="column-header">📅 RENDEZ-VOUS</div>
+        <div class="tasks">${rvHtml}</div>
+      </div>
+      
+      <div class="column pro">
+        <div class="column-header">💼 PROFESSIONNEL</div>
+        <div class="tasks">${proHtml}</div>
+      </div>
+      
+      <div class="column perso">
+        <div class="column-header">🏠 PERSONNEL</div>
+        <div class="tasks">${persoHtml}</div>
+      </div>
+      
+      <div class="notes-section">
+        <h3>📝 Notes du jour</h3>
+        ${getVacancesScolaires(currentYear, currentMonth, currentDay) ? '<div style="background:#fff3cd;padding:10px;border-radius:6px;margin-bottom:10px;border-left:4px solid #ffc107;color:#856404"><strong>🏫 ' + getVacancesScolaires(currentYear, currentMonth, currentDay) + '</strong></div>' : ''}
+        ${getFetesJuives(currentYear, currentMonth, currentDay) ? '<div style="background:#e3f2fd;padding:10px;border-radius:6px;margin-bottom:10px;border-left:4px solid #2196f3;color:#0d47a1"><strong>' + getFetesJuives(currentYear, currentMonth, currentDay) + '</strong></div>' : ''}
+        <textarea class="notes-textarea" id="dayNotes" 
+                  placeholder="Écrivez vos notes, réflexions ou observations pour cette journée..."
+                  onchange="saveTasks(currentYear,currentMonth,currentDay)">${savedData && savedData.notes ? savedData.notes : ''}</textarea>
+      </div>
+    </div>
+  `;
+  
+  // Reprogrammer les alertes après le rendu
+  setTimeout(() => scheduleAllAlerts(), 100);
+}
+
+// Initialisation et sauvegarde automatique
+render();
+scheduleAllAlerts();
+scheduleAutoReport(); // Activer le report automatique
+
+window.addEventListener('beforeunload', () => {
+  saveTasks(currentYear, currentMonth, currentDay);
+});
+
+// Sauvegarde automatique toutes les 30 secondes
+setInterval(() => {
+  saveTasks(currentYear, currentMonth, currentDay);
+}, 30000);
+</script>
+
+</body>
+</html>
